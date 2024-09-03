@@ -80,8 +80,10 @@
                 <option value="pie">Pie Chart</option>
                 <option value="line">Line Chart</option>
             </select>
-            <label for="columnSelect">Choose column:</label>
-            <select id="columnSelect"></select>
+            <label for="xColumnSelect">Choose x-axis column:</label>
+            <select id="xColumnSelect"></select>
+            <label for="yColumnSelect">Choose y-axis column:</label>
+            <select id="yColumnSelect"></select>
             <button onclick="generateChart()">Generate Chart</button>
         </div>
         <canvas id="myChart" width="400" height="400"></canvas>
@@ -93,7 +95,8 @@
 
         const fileInput = document.getElementById('fileInput');
         const chartTypeSelect = document.getElementById('chartType');
-        const columnSelect = document.getElementById('columnSelect');
+        const xColumnSelect = document.getElementById('xColumnSelect');
+        const yColumnSelect = document.getElementById('yColumnSelect');
         const canvas = document.getElementById('myChart');
         const ctx = canvas.getContext('2d');
         const insightsDiv = document.getElementById('insights');
@@ -134,13 +137,19 @@
                         return;
                     }
 
-                    // Populate the column select dropdown
-                    columnSelect.innerHTML = '';
-                    numericColumns.forEach(column => {
-                        const option = document.createElement('option');
-                        option.value = column;
-                        option.textContent = column;
-                        columnSelect.appendChild(option);
+                    // Populate the column select dropdowns
+                    xColumnSelect.innerHTML = '';
+                    yColumnSelect.innerHTML = '';
+                    headers.forEach(column => {
+                        const optionX = document.createElement('option');
+                        optionX.value = column;
+                        optionX.textContent = column;
+                        xColumnSelect.appendChild(optionX);
+
+                        const optionY = document.createElement('option');
+                        optionY.value = column;
+                        optionY.textContent = column;
+                        yColumnSelect.appendChild(optionY);
                     });
 
                     let numRows = data.length;
@@ -161,11 +170,12 @@
         });
 
         function generateChart() {
-            const selectedColumn = columnSelect.value;
+            const xAxisColumn = xColumnSelect.value;
+            const yAxisColumn = yColumnSelect.value;
             const chartType = chartTypeSelect.value;
 
-            if (!selectedColumn) {
-                alert("Please select a column to chart.");
+            if (!xAxisColumn || !yAxisColumn) {
+                alert("Please select both x-axis and y-axis columns.");
                 return;
             }
 
@@ -181,10 +191,10 @@
                     const data = results.data;
 
                     let chartData = {
-                        labels: data.map(row => row[Object.keys(data[0])[0]]),
+                        labels: data.map(row => row[xAxisColumn]),
                         datasets: [{
-                            label: selectedColumn,
-                            data: data.map(row => row[selectedColumn]),
+                            label: yAxisColumn,
+                            data: data.map(row => row[yAxisColumn]),
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderColor: 'rgba(75, 192, 192, 1)',
                             borderWidth: 1
@@ -196,7 +206,17 @@
                         data: chartData,
                         options: {
                             scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: xAxisColumn // Dynamic x-axis label
+                                    }
+                                },
                                 y: {
+                                    title: {
+                                        display: true,
+                                        text: yAxisColumn // Dynamic y-axis label
+                                    },
                                     beginAtZero: true
                                 }
                             }
